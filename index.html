@@ -234,30 +234,7 @@ body {
 .field textarea { resize: vertical; min-height: 80px; }
 .field select { cursor: pointer; }
 
-/* BIOMES */
-.biome-checks {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.biome-check {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 7px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 40px;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--gray);
-  transition: all 0.2s;
-  user-select: none;
-}
-.biome-check input { display: none; }
-.biome-check:hover { border-color: var(--green); color: var(--green); }
-.biome-check.checked { border-color: var(--green); background: var(--green-pale); color: var(--green); font-weight: 600; }
-.biome-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
 
 /* SECTION DIVIDER */
 .section-divider {
@@ -430,6 +407,10 @@ body {
   .header-inner { flex-wrap: wrap; }
   .header-text h1 { white-space: normal; font-size: 1.2rem; }
 }
+
+.chk-item { padding: 2px 0; transition: color 0.2s; cursor: default; }
+.chk-item.done { color: var(--green); font-weight: 500; }
+.chk-item.done::first-letter { content: '✅'; }
 </style>
 </head>
 <body>
@@ -452,7 +433,14 @@ body {
     <p>Preencha os dados abaixo e clique em <strong>Gerar Documentos</strong>. O sistema gera automaticamente todos os documentos institucionais — Acordo (PT/EN), Ofício de Interesse (PT/EN), Projeto Guarda-Chuva e Plano de Trabalho — em formato Word, prontos para assinatura oficial.</p>
   </div>
 
-  <div class="form-layout">
+  
+  <!-- LS Restore Banner -->
+  <div id="lsBanner" style="display:none;background:#e8f5ec;border:1px solid #2da050;border-radius:10px;padding:12px 20px;margin-bottom:20px;align-items:center;gap:14px;flex-wrap:wrap;">
+    <span style="font-size:0.85rem;color:#1a7a3c;font-weight:600;">✅ Dados restaurados do seu último preenchimento.</span>
+    <button onclick="document.getElementById('lsBanner').style.display='none'" style="margin-left:auto;background:none;border:1px solid #1a7a3c;border-radius:6px;padding:4px 12px;color:#1a7a3c;cursor:pointer;font-size:0.8rem;">OK</button>
+    <button onclick="clearFormLS();document.getElementById('lsBanner').style.display='none';location.reload()" style="background:none;border:1px solid #c0392b;border-radius:6px;padding:4px 12px;color:#c0392b;cursor:pointer;font-size:0.8rem;">Limpar</button>
+  </div>
+<div class="form-layout">
     <div class="left-col">
 
       <!-- INSTITUIÇÃO BRASILEIRA -->
@@ -578,11 +566,11 @@ body {
           <div class="field-grid">
             <div class="field">
               <label>Data de Início</label>
-              <input type="date" id="projInicio" value="2025-01-01">
+              <input type="date" id="projInicio" value="2026-08-01">
             </div>
             <div class="field">
               <label>Data de Término</label>
-              <input type="date" id="projFim" value="2030-12-31">
+              <input type="date" id="projFim" value="2031-07-31">
             </div>
             <div class="field">
               <label>Nº do Acordo (opcional)</label>
@@ -593,24 +581,7 @@ body {
               <input type="text" id="acordoAno" value="2025">
             </div>
           </div>
-          <div class="section-divider"></div>
-          <div class="field">
-            <label>Biomas de Foco</label>
-            <div class="biome-checks" id="biomeChecks">
-              <label class="biome-check checked" onclick="toggleBiome(this, 'Pantanal')">
-                <input type="checkbox" checked> <span class="biome-dot"></span> Pantanal
-              </label>
-              <label class="biome-check checked" onclick="toggleBiome(this, 'Cerrado')">
-                <input type="checkbox" checked> <span class="biome-dot"></span> Cerrado
-              </label>
-              <label class="biome-check checked" onclick="toggleBiome(this, 'Amazônia')">
-                <input type="checkbox" checked> <span class="biome-dot"></span> Amazônia
-              </label>
-              <label class="biome-check" onclick="toggleBiome(this, 'Mata Atlântica')">
-                <input type="checkbox"> <span class="biome-dot"></span> Mata Atlântica
-              </label>
-            </div>
-          </div>
+
         </div>
       </div>
 
@@ -662,6 +633,30 @@ body {
 
     <!-- RIGHT PANEL -->
     <div class="right-panel">
+
+      <!-- CHECKLIST -->
+      <div class="card">
+        <div class="card-header blue">
+          <div class="icon">✅</div>
+          <div><h2>Checklist de Preenchimento</h2></div>
+        </div>
+        <div class="card-body" id="checklistBody">
+          <div style="font-size:0.78rem;color:var(--gray);line-height:1.8;" id="checklistItems">
+            <div class="chk-item" data-field="reitorNome">⬜ Nome do(a) Reitor(a)</div>
+            <div class="chk-item" data-field="reitorCPF">⬜ CPF do(a) Reitor(a)</div>
+            <div class="chk-item" data-field="instIntNome">⬜ Instituição internacional</div>
+            <div class="chk-item" data-field="intRepNome">⬜ Representante internacional</div>
+            <div class="chk-item" data-field="intRepPassaporte">⬜ Nº Passaporte</div>
+            <div class="chk-item" data-field="projTituloPT">⬜ Título do projeto (PT)</div>
+            <div class="chk-item" data-field="projTituloEN">⬜ Título do projeto (EN)</div>
+            <div class="chk-item" data-field="projObjeto">⬜ Objeto / Descrição</div>
+            <div class="chk-item" data-field="coordBrNome">⬜ Coordenador UNEMAT</div>
+            <div class="chk-item" data-field="coordIntNome">⬜ Coordenador Internacional</div>
+          </div>
+          <div style="font-size:0.75rem;color:var(--gray-light);margin-top:10px;" id="checklistProgress">0/10 campos preenchidos</div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header blue">
           <div class="icon">⚡</div>
@@ -723,16 +718,7 @@ body {
 <script>
 // ─── HELPERS ────────────────────────────────────────────────
 
-function toggleBiome(el, name) {
-  el.classList.toggle('checked');
-}
 
-function getBiomes() {
-  const labels = document.querySelectorAll('.biome-check');
-  return Array.from(labels)
-    .filter(l => l.classList.contains('checked'))
-    .map(l => l.textContent.trim());
-}
 
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
@@ -770,10 +756,10 @@ function calcDuration(start, end) {
 // ─── READ FORM ────────────────────────────────────────────────
 
 function readForm() {
-  const biomes = getBiomes();
-  const biomesStr = biomes.join(', ');
-  const inicio = getVal('projInicio', '01/01/2025');
-  const fim = getVal('projFim', '31/12/2030');
+  const biomes = [];
+  const biomesStr = 'Pantanal, Cerrado e Amazônia';
+  const inicio = getVal('projInicio', '01/08/2026');
+  const fim = getVal('projFim', '31/07/2031');
   const num = getVal('acordoNum', '____ /_____');
   const ano = getVal('acordoAno', '2025');
 
@@ -806,7 +792,7 @@ function readForm() {
     coordIntLotacao: getVal('coordIntLotacao', 'Dept. of Aquatic Ecology and Environmental Biology – Radboud University'),
     coordIntEmail: getVal('coordIntEmail', 'S.Kosten@science.ru.nl'),
     coordIntCargo: getVal('coordIntCargo', 'Assistant Professor'),
-    biomes, biomesStr,
+    biomesStr,
     inicio: fmtDate(inicio),
     fim: fmtDate(fim),
     inicioRaw: inicio,
@@ -1481,13 +1467,15 @@ function makeGuardaChuva(d) {
 }
 
 function makePlanoTrabalho(d) {
+  const [iniDay, iniMon, iniYr] = d.inicio.split('/');
+  const yr = parseInt(iniYr);
   const cronograma = [
-    { meta: 'Estruturação e planejamento conjunto', fase: 'Nac./Int.', descricao: 'Definição das linhas prioritárias, equipes, protocolos e cronograma detalhado.', inicio: d.inicio, fim: '30/06/' + d.ano },
-    { meta: 'Coletas e monitoramento de campo – Ano 1', fase: 'Nacional', descricao: 'Campanhas de coleta e monitoramento, com análises laboratoriais na UNEMAT.', inicio: '01/07/' + d.ano, fim: '31/12/' + d.ano },
-    { meta: 'Análises laboratoriais avançadas', fase: 'Internacional', descricao: 'Análises especializadas na instituição internacional (ICP-MS, genômica e ecotoxicologia).', inicio: '01/01/' + (parseInt(d.ano)+1), fim: '31/12/' + (parseInt(d.ano)+1) },
-    { meta: 'Produção científica – artigos e congressos', fase: 'Nac./Int.', descricao: 'Produção e submissão de artigos; participação em conferências nacionais e internacionais.', inicio: '01/01/' + (parseInt(d.ano)+1), fim: d.fim },
-    { meta: 'Intercâmbio de pesquisadores e estudantes', fase: 'Nac./Int.', descricao: 'Mobilidade de doutorandos e pós-doutorandos entre as instituições (missões de pesquisa e doutorado sanduíche).', inicio: '01/01/' + (parseInt(d.ano)+1), fim: d.fim },
-    { meta: 'Síntese, publicação final e avaliação', fase: 'Nac./Int.', descricao: 'Consolidação dos resultados, publicações finais, relatório de encerramento e avaliação do projeto.', inicio: '01/01/2030', fim: d.fim },
+    { meta: 'Estruturação e planejamento conjunto', fase: 'Nac./Int.', descricao: 'Definição das linhas prioritárias, equipes, protocolos e cronograma detalhado.', inicio: d.inicio, fim: '31/01/' + (yr+1) },
+    { meta: 'Coletas e monitoramento de campo – Ano 1', fase: 'Nacional', descricao: 'Campanhas de coleta e monitoramento, com análises laboratoriais.', inicio: '01/02/' + (yr+1), fim: '31/07/' + (yr+1) },
+    { meta: 'Análises laboratoriais avançadas', fase: 'Internacional', descricao: 'Análises especializadas na instituição internacional (ICP-MS, genômica e ecotoxicologia).', inicio: '01/08/' + (yr+1), fim: '31/07/' + (yr+2) },
+    { meta: 'Produção científica – artigos e congressos', fase: 'Nac./Int.', descricao: 'Produção e submissão de artigos; participação em conferências nacionais e internacionais.', inicio: '01/08/' + (yr+1), fim: d.fim },
+    { meta: 'Intercâmbio de pesquisadores e estudantes', fase: 'Nac./Int.', descricao: 'Mobilidade de doutorandos e pós-doutorandos entre as instituições (missões de pesquisa e doutorado sanduíche).', inicio: '01/08/' + (yr+1), fim: d.fim },
+    { meta: 'Síntese, publicação final e avaliação', fase: 'Nac./Int.', descricao: 'Consolidação dos resultados, publicações finais, relatório de encerramento e avaliação do projeto.', inicio: '01/01/' + (yr+4), fim: d.fim },
   ];
 
   const children = [
@@ -1591,6 +1579,66 @@ function makePlanoTrabalho(d) {
   });
 }
 
+
+// ─── LOCAL STORAGE ────────────────────────────────────────────────────────────
+const LS_KEY = 'unemat_acordos_form_v2';
+
+function saveFormToLS() {
+  const ids = [
+    'instBrNome','instBrCNPJ','instBrEndereco',
+    'reitorNome','reitorCPF','reitorRG','reitorCargo',
+    'instIntNome','instIntNomeLegal','instIntPais','instIntPaisEN','instIntEndereco',
+    'intRepNome','intRepCargo','intRepPassaporte','intRepEmail',
+    'projTituloPT','projTituloEN','projObjeto','projJustificativa',
+    'projInicio','projFim','acordoNum','acordoAno',
+    'coordBrNome','coordBrLotacao','coordBrEmail','coordBrCargo',
+    'coordIntNome','coordIntLotacao','coordIntEmail','coordIntCargo'
+  ];
+  const data = {};
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadFormFromLS() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    Object.entries(data).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val;
+    });
+    return true;
+  } catch(e) { return false; }
+}
+
+function clearFormLS() {
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+  showToast('Formulário limpo!', 'success');
+}
+
+// Auto-save on any input change
+document.addEventListener('input', () => saveFormToLS());
+document.addEventListener('change', () => saveFormToLS());
+
+// Restore on page load
+window.addEventListener('DOMContentLoaded', () => {
+  const restored = loadFormFromLS();
+  if (restored) {
+    showLSBanner();
+  }
+});
+
+function showLSBanner() {
+  const banner = document.getElementById('lsBanner');
+  if (banner) banner.style.display = 'flex';
+}
+
 // ─── GENERATE ALL ─────────────────────────────────────────────
 
 async function gerarDocumentos() {
@@ -1625,8 +1673,9 @@ async function gerarDocumentos() {
     for (let i = 0; i < docs.length; i++) {
       setProgress(10 + (i * 14), `Gerando ${docs[i].label}...`);
       const doc = docs[i].fn();
-      const buffer = await docx.Packer.toBuffer(doc);
-      zip.file(docs[i].name, buffer);
+      const blob = await docx.Packer.toBlob(doc);
+      const arrayBuf = await blob.arrayBuffer();
+      zip.file(docs[i].name, arrayBuf);
       await new Promise(r => setTimeout(r, 80));
     }
 
@@ -1685,22 +1734,50 @@ async function baixarModelo() {
     coordIntCargo: 'Assistant Professor',
     biomes: ['Pantanal', 'Cerrado', 'Amazônia'],
     biomesStr: 'Pantanal, Cerrado e Amazônia',
-    inicio: '01/01/2025',
-    fim: '31/12/2030',
+    inicio: '01/08/2026',
+    fim: '31/07/2031',
     duracao: '5 (cinco) anos',
-    num: '01/2025',
-    ano: '2025',
+    num: '01/2026',
+    ano: '2026',
   };
 
   try {
     const doc = makePlanoTrabalho(d);
-    const buffer = await docx.Packer.toBuffer(doc);
-    saveAs(new Blob([buffer]), 'Modelo_Plano_de_Trabalho_UNEMAT_Radboud.docx');
+    const blob = await docx.Packer.toBlob(doc);
+    saveAs(blob, 'Modelo_Plano_de_Trabalho_UNEMAT_Radboud.docx');
     showToast('✅ Modelo baixado!', 'success');
   } catch(err) {
     showToast('❌ Erro: ' + err.message, 'error');
   }
 }
+
+// ─── CHECKLIST LIVE UPDATE ────────────────────────────────────────────────────
+function updateChecklist() {
+  const items = document.querySelectorAll('.chk-item');
+  let done = 0;
+  items.forEach(item => {
+    const fieldId = item.dataset.field;
+    const el = document.getElementById(fieldId);
+    const filled = el && el.value.trim().length > 2;
+    if (filled) {
+      item.classList.add('done');
+      item.textContent = '✅ ' + item.textContent.replace(/^[⬜✅] /, '');
+      done++;
+    } else {
+      item.classList.remove('done');
+      item.textContent = '⬜ ' + item.textContent.replace(/^[⬜✅] /, '');
+    }
+  });
+  const prog = document.getElementById('checklistProgress');
+  if (prog) {
+    prog.textContent = done + '/' + items.length + ' campos preenchidos';
+    prog.style.color = done === items.length ? 'var(--green)' : 'var(--gray-light)';
+  }
+}
+document.addEventListener('input', updateChecklist);
+document.addEventListener('change', updateChecklist);
+window.addEventListener('DOMContentLoaded', () => setTimeout(updateChecklist, 300));
+
 </script>
 </body>
 </html>
